@@ -1,0 +1,17 @@
+name: CatchAttr
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python
+  - xarray
+  - geopandas
+  - pyshp
+  - tqdm
+  - gdal
+  - rasterio
+  - richdem
+  - netcdf4
+  - opencv
+  - pytest
+  - black
