@@ -170,7 +170,7 @@ def form_factor(area, length):
     float
         catchment form factor
     """
-    return area / length ** 2
+    return area / length**2
 
 
 def shape_factor(area, length):
@@ -192,7 +192,7 @@ def shape_factor(area, length):
         catchment shape factor
     """
 
-    return length ** 2 / area
+    return length**2 / area
 
 
 def compactness_coefficient(perimeter, area):
@@ -234,7 +234,7 @@ def circulatory_ratio(perimeter, area):
     float
         catchment circulatory ratio
     """
-    return 12.57 * area / perimeter ** 2
+    return 12.57 * area / perimeter**2
 
 
 def elongation_ratio(area, length):
@@ -282,7 +282,7 @@ def basin_area(basin_shp):
         ),
         geom,
     )
-    return geom_area.area / 1000 ** 2  # km^2
+    return geom_area.area / 1000**2  # km^2
 
 
 def basin_topo_stats(basin_shps, stream_shps):

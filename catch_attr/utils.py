@@ -11,13 +11,13 @@ from rasterio.warp import calculate_default_transform, reproject, Resampling
 
 
 def geotif_from_array(
-        array: np.array,
-        lat_start: float,
-        lat_end: float,
-        lon_start: float,
-        lon_end: float,
-        degree: float,
-        output_file: str,
+    array: np.array,
+    lat_start: float,
+    lat_end: float,
+    lon_start: float,
+    lon_end: float,
+    degree: float,
+    output_file: str,
 ):
     """
     将一个 numpy array 写入一个带有位置信息的 tif 文件，默认使用 wgs84 坐标系
@@ -185,7 +185,7 @@ def merge_tifs(tif_files: list, outfile: str):
 
 
 def extract_raster_by_shape_file(
-        raster: str, shape_file: str, output_file=None, nodata=-9999
+    raster: str, shape_file: str, output_file=None, nodata=-9999
 ) -> np.array:
     """
     Extract data in the given shapefile from a raster file
@@ -229,7 +229,9 @@ def extract_raster_by_shape_file(
         return out_image
 
 
-def zonal_stats_singletif(tif_file: str, shape_file: str, valid_min=None, valid_max=None) -> float:
+def zonal_stats_singletif(
+    tif_file: str, shape_file: str, valid_min=None, valid_max=None
+) -> float:
     """
     Input one .shp file and one .tif file, and make zonal statistics
 

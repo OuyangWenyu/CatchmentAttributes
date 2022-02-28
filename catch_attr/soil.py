@@ -1,11 +1,12 @@
 import cv2
 import netCDF4
 import numpy as np
+import pandas as pd
 import xarray
 
 from utils import *
 
-'''
+"""
 Calculate catchment aggregated soil characteristics.
 
 The directory should be structured as follows:
@@ -65,7 +66,7 @@ from file names to variable names if you are processing multiple variables simul
 (3) You will need to specify the valid value ranges for the converted tif files in L196, similarly, a file_name -> value 
 range mapping might be needed if you are processing multiple variable simultaneously.
 
-'''
+"""
 
 
 def read_nc_data(ncfile: str):
@@ -91,13 +92,13 @@ def read_nc_data(ncfile: str):
         with xarray.open_dataset(ncfile) as file:
             longnames = {}
             for x in file.variables:
-                if 'longname' in file[x].attrs:
+                if "longname" in file[x].attrs:
                     longnames[x] = file[x].longname
                 else:
                     longnames[x] = file[x].long_name
             units = {}
             for x in file.variables:
-                if 'units' in file[x].attrs:
+                if "units" in file[x].attrs:
                     units[x] = file[x].units
         return variables, longnames, units
 
@@ -124,7 +125,7 @@ def tif_from_array(mag_grid: np.array, output_file: str):
     xsize = len(lons)
     ulx = -180
     uly = -90
-    driver = gdal.GetDriverByName('GTiff')
+    driver = gdal.GetDriverByName("GTiff")
     ds = driver.Create(output_file, xsize, ysize, 1, gdal.GDT_Float32)
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326)
@@ -132,7 +133,9 @@ def tif_from_array(mag_grid: np.array, output_file: str):
     gt = [ulx, xres, 0, uly, 0, yres]
     ds.SetGeoTransform(gt)
     outband = ds.GetRasterBand(1)
-    outband.SetStatistics(np.min(mag_grid), np.max(mag_grid), np.average(mag_grid), np.std(mag_grid))
+    outband.SetStatistics(
+        np.min(mag_grid), np.max(mag_grid), np.average(mag_grid), np.std(mag_grid)
+    )
     outband.WriteArray(mag_grid)
     ds = None
 
@@ -172,7 +175,7 @@ def tif_from_nc(ncfile: str, variable_key: str, output_file: str):
     xsize = len(lons)
     ulx = 73.004166
     uly = 18.004168
-    driver = gdal.GetDriverByName('GTiff')
+    driver = gdal.GetDriverByName("GTiff")
     ds = driver.Create(output_file, xsize, ysize, 1, gdal.GDT_Float32)
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326)
@@ -180,7 +183,9 @@ def tif_from_nc(ncfile: str, variable_key: str, output_file: str):
     gt = [ulx, xres, 0, uly, 0, yres]
     ds.SetGeoTransform(gt)
     outband = ds.GetRasterBand(1)
-    outband.SetStatistics(np.min(mag_grid), np.max(mag_grid), np.average(mag_grid), np.std(mag_grid))
+    outband.SetStatistics(
+        np.min(mag_grid), np.max(mag_grid), np.average(mag_grid), np.std(mag_grid)
+    )
     outband.WriteArray(mag_grid)
     ds = None
 
@@ -201,10 +206,12 @@ def binary2tif(file, out_path):
 
     data = np.fromfile(file, dtype=np.float64).reshape((21600, 43200))
     data[data == data.min()] = -9999
-    tif_from_array(cv2.flip(np.rot90(cv2.resize(data, (43200 // 10, 21600 // 10)), 2), 1), out_path)
+    tif_from_array(
+        cv2.flip(np.rot90(cv2.resize(data, (43200 // 10, 21600 // 10)), 2), 1), out_path
+    )
 
 
-def all_soil_depth_mean_weight(basin_id, attr_name):
+def all_soil_depth_mean_weight_in_soilgrids250(attr_df: pd.DataFrame):
     """
     Read sajd/silt/clay weight in all soil depths for a basin and get the average value over all depth intervals
 
@@ -212,17 +219,28 @@ def all_soil_depth_mean_weight(basin_id, attr_name):
 
     Parameters
     ----------
-    basin_id
-        id of a basin
-    attr_name
-        which attribute sand/silt/clay
+    attr_df
+        attributes of basins
 
     Returns
     -------
-    Soil attr value average over all layers in a basin
+    pd.Dataframe
+        Soil attr value average over all layers in a basin
     """
+    all_cols = attr_df.columns.values
+    cols = [col.split("_")[0] for col in all_cols if "sl1" in col]
     soil_depths = np.array([0, 5, 15, 30, 60, 100, 200])
     heights = soil_depths[1:] - soil_depths[:-1]
-    all_weights = np.zeros(7)
-    mean_value = np.sum(heights * (all_weights[:-1] + all_weights[1:]) / 2) / 200
-    return mean_value
+    for i in range(len(cols)):
+        attr_ = attr_df.filter(regex=cols[i])
+        all_numbers = np.zeros(attr_.shape)
+        mean_value = np.zeros(attr_.shape[0])
+        # to guarantee the sequence is correct, we use a loop rather than apply function
+        for j in range(1, 8):
+            all_numbers[:, j - 1] = attr_.filter(regex="sl" + str(j)).values.flatten()
+        for k in range(len(mean_value)):
+            mean_value[k] = (
+                np.sum(heights * (all_numbers[k, :-1] + all_numbers[k, 1:]) / 2) / 200
+            )
+        attr_df[cols[i]] = mean_value
+    return attr_df

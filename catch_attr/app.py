@@ -27,7 +27,7 @@ from topo_elev import elev_mean, slope_mean, merge_and_reproject_dems
 from topo_shape import basin_topo_stats
 from modis import summary_year
 from utils import absolute_file_paths, reproject_tif, shp_id, zonal_stats_singletif
-from soil import binary2tif, tif_from_nc
+from soil import binary2tif, tif_from_nc, all_soil_depth_mean_weight_in_soilgrids250
 from permeability_porosity import GLHYMPS
 
 
@@ -149,11 +149,11 @@ def glim_app():
     res = {}
     basin_shape_files_dir = os.path.join(definitions.DATASET_DIR, "shapefiles")
     for shape_file in tqdm(
-            [
-                file
-                for file in absolute_file_paths(basin_shape_files_dir)
-                if file.endswith(".shp")
-            ]
+        [
+            file
+            for file in absolute_file_paths(basin_shape_files_dir)
+            if file.endswith(".shp")
+        ]
     ):
         res[shp_id(shape_file)] = glimer.extract_basin_attributes_glim(
             shape_file=shape_file
@@ -165,22 +165,37 @@ def glim_app():
 
 
 def permeability_porosity_app():
-    print("----------------------Calculate basin permeability and porosity-------------------------------")
-    permeability_no_permafrost_raster_tif = os.path.join(definitions.DATASET_DIR, "9_code_data",
-                                                         "processed_permeability.tif")
-    porosity_raster_tif = os.path.join(definitions.DATASET_DIR, "9_code_data", "processed_porosity.tif")
+    print(
+        "----------------------Calculate basin permeability and porosity-------------------------------"
+    )
+    permeability_no_permafrost_raster_tif = os.path.join(
+        definitions.DATASET_DIR, "9_code_data", "processed_permeability.tif"
+    )
+    porosity_raster_tif = os.path.join(
+        definitions.DATASET_DIR, "9_code_data", "processed_porosity.tif"
+    )
     nan_value = 65535
 
-    glhympser = GLHYMPS(permeability_no_permafrost_raster_tif, porosity_raster_tif, nan_value=nan_value)
+    glhympser = GLHYMPS(
+        permeability_no_permafrost_raster_tif, porosity_raster_tif, nan_value=nan_value
+    )
 
     res = {}
     basin_shape_files_dir = os.path.join(definitions.DATASET_DIR, "shapefiles")
-    for shape_file in tqdm([file for file in absolute_file_paths(basin_shape_files_dir) if file.endswith('.shp')]):
+    for shape_file in tqdm(
+        [
+            file
+            for file in absolute_file_paths(basin_shape_files_dir)
+            if file.endswith(".shp")
+        ]
+    ):
         res[shp_id(shape_file)] = glhympser.zonal_stats_glhymps(shape_file=shape_file)
-    res = pd.DataFrame(res).T.reset_index().rename(columns={'index': 'gage_id'})
+    res = pd.DataFrame(res).T.reset_index().rename(columns={"index": "gage_id"})
     output_dir = os.path.join(definitions.DATASET_DIR, "attribute")
     df_res_order_sort = pd.DataFrame(res).sort_values(by=["gage_id"])
-    df_res_order_sort.to_csv(os.path.join(output_dir, "permeability_porosity.csv"), index=None)
+    df_res_order_sort.to_csv(
+        os.path.join(output_dir, "permeability_porosity.csv"), index=None
+    )
     print("------------------------Finished---------------------------------")
 
 
@@ -194,7 +209,7 @@ def igbp_app():
 
     res = {}
     for shape_file in tqdm(
-            file for file in absolute_file_paths(shp_dir) if file.endswith(".shp")
+        file for file in absolute_file_paths(shp_dir) if file.endswith(".shp")
     ):
         res[shp_id(shape_file)] = igbp_stats(shapefile=shape_file, igbp_tif=igbp_tif)
     df_res_order_sort = res_to_df(res)
@@ -214,7 +229,7 @@ def root_depth_app():
 
     res = {}
     for shape_file in tqdm(
-            file for file in absolute_file_paths(shp_dir) if file.endswith(".shp")
+        file for file in absolute_file_paths(shp_dir) if file.endswith(".shp")
     ):
         res[shp_id(shape_file)] = root_depth_50_99_stats(
             shape_file, igbp_tif, depth_mapper
@@ -320,7 +335,9 @@ def modis_app(args):
 
 
 def soil_app():
-    print("----------------------Calculate basin soil attribute-------------------------------")
+    print(
+        "----------------------Calculate basin soil attribute-------------------------------"
+    )
 
     # Here we only use tif files from https://files.isric.org/soilgrids/former/2017-03-10/data/
     # we mainly process these attributes:
@@ -329,29 +346,36 @@ def soil_app():
     # clay: Soil clay content (%), average over all layers
     soil_source_dir = os.path.join(definitions.DATASET_DIR, "soil_source_data")
     # zonal stats
-    print('-> zonal stats')
     res = {}
-    files = [x for x in absolute_file_paths(soil_source_dir) if x.endswith('.tif')]
+    files = [x for x in absolute_file_paths(soil_source_dir) if x.endswith(".tif")]
     shapefiles_dir = os.path.join(definitions.DATASET_DIR, "shapefiles")
-    shps = [x for x in absolute_file_paths(shapefiles_dir) if x.endswith('.shp')]
+    shps = [x for x in absolute_file_paths(shapefiles_dir) if x.endswith(".shp")]
     for file in files:
+        if not ("_downscaled" in file):
+            continue
         try:
             for shp in shps:
                 if not shp_id(shp) in res:
                     res[shp_id(shp)] = {}
-                var_name = os.path.basename(file).split('.')[0].replace('_downscaled', '')
-                res[shp_id(shp)][var_name] = zonal_stats_singletif(file, shp, valid_min=0, valid_max=None)
+                var_name = (
+                    os.path.basename(file).split(".")[0].replace("_downscaled", "")
+                )
+                res[shp_id(shp)][var_name] = zonal_stats_singletif(
+                    file, shp, valid_min=0, valid_max=None
+                )
         except Exception as e:
             print(e)
             continue
-    res = pd.DataFrame(res).T.reset_index().rename(columns={'index': 'gage_id'})
+    res = pd.DataFrame(res).T.reset_index().rename(columns={"index": "gage_id"})
+    # most attributes in SoilGrids250m include values of 7 standard depths, we calculate mean value
+    res_new = all_soil_depth_mean_weight_in_soilgrids250(res)
     output_dir = os.path.join(definitions.DATASET_DIR, "attribute")
-    df_res_order_sort = pd.DataFrame(res).sort_values(by=["gage_id"])
+    df_res_order_sort = pd.DataFrame(res_new).sort_values(by=["gage_id"])
     df_res_order_sort.to_csv(os.path.join(output_dir, "soil.csv"), index=None)
     print("------------------------Finished---------------------------------")
 
 
-# python app.py --catch_attr basin_mean_forcing --year_range 2014 2021 --region camels_mr
+# python app.py --catch_attr basin_mean_forcing --year_range 2014 2022 --region camels_mr
 # python app.py --catch_attr climate
 # python app.py --catch_attr geology
 # python app.py --catch_attr permeability_porosity

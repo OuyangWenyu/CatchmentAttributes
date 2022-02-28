@@ -332,11 +332,12 @@ Required folder structure:
 1. Download source files from [SoilGrids250](https://files.isric.org/soilgrids/former/2017-03-10/data/). As the files
    are large, you can only choose the attributes you want. More details about the attributes could be
    seen [here](https://github.com/ISRICWorldSoil/SoilGrids250m/blob/master/grids/models/META_GEOTIFF_1B.csv)
-2. Downscale the downloaded tif files, so that we can process it later easily. Open a tif file in QGIS, then choose
+2. Downscale all downloaded tif files, so that we can process it later easily. Open a tif file in QGIS, then choose
    Raster->Projections->Warp (Reproject), and name the output file as "xxx_downscaled.tif". Notice the unit of
    resolution in this setting is same with the original tif file's and it is degree as the CRS is WGS84 (here we choose
    0.05). Because we will calculate the mean value of grids in a basin, here we also choose "Average" as the resampling
-   method. Set no data value as -9999
+   method. Set no data value as -9999. If too many tif files need to be processed, you can modify the script
+   qgis4soil.py and import it into qgis python console to batch-process them
 3. put the processed tif files to "data/soil_source_data" directory. Then you can run the following code
 
 ```Shell
