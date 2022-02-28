@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from catch_attr.climate import (
-    p_mean,
+    series_mean,
     high_prec_freq,
     high_prec_dur,
     high_prec_timing,
@@ -55,7 +55,7 @@ def test_gee_daily_era5_land_to_camels_format():
 
 
 def test_p_eman(forcing_data):
-    p_mean_value = p_mean(forcing_data["total_precipitation"])
+    p_mean_value = series_mean(forcing_data["total_precipitation"])
     assert p_mean_value == 0.003689500707409431
 
 

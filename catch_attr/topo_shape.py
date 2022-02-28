@@ -312,11 +312,11 @@ def basin_topo_stats(basin_shps, stream_shps):
             res[gage_id] = {
                 "Length": ld,
                 "Area": ba,
-                "Form factor": form_factor(ba, ld),
-                "Shape factor": shape_factor(ba, ld),
-                "Compactness coefficient": compactness_coefficient(cp, ba),
-                "Circulatory ratio": circulatory_ratio(cp, ba),
-                "Elongation ratio": elongation_ratio(ba, ld),
+                "FormFactor": form_factor(ba, ld),
+                "ShapeFactor": shape_factor(ba, ld),
+                "CompactnessCoefficient": compactness_coefficient(cp, ba),
+                "CirculatoryRatio": circulatory_ratio(cp, ba),
+                "ElongationRatio": elongation_ratio(ba, ld),
             }
         # If the given polygon is invalid, the length attribute (L) cannot be determined, and other variables depend
         # on that.
@@ -324,10 +324,10 @@ def basin_topo_stats(basin_shps, stream_shps):
             res[gage_id] = {
                 "Length": None,
                 "Area": ba,
-                "Form factor": None,
-                "Shape factor": None,
-                "Compactness coefficient": None,
-                "Circulatory ratio": None,
-                "Elongation ratio": None,
+                "FormFactor": None,
+                "ShapeFactor": None,
+                "CompactnessCoefficient": None,
+                "CirculatoryRatio": None,
+                "ElongationRatio": None,
             }
     return res

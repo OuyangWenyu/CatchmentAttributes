@@ -11,14 +11,14 @@ sys.path.append("..")
 import definitions
 from basin_era5_process import trans_era5_land_to_camels_format
 from climate import (
-    p_mean,
+    series_mean,
     high_prec_freq,
     high_prec_dur,
     high_prec_timing,
     low_prec_dur,
     low_prec_freq,
     low_prec_timing,
-    frac_snow_daily,
+    frac_snow_daily, p_seasonality,
 )
 from glim import Glim
 from igbp import igbp_stats
@@ -93,8 +93,20 @@ def climate_app():
         name = file.split(os.path.sep)[-1].split("_")[0]
         df = pd.read_csv(file, sep="\s+")
         pre = df["total_precipitation"]
+        # evp data in ERA5-LAND are negative
+        pet = df["potential_evaporation"] * (-1)
+        # there are some abnormal values
+        aet = df[(df["total_evaporation"] > -1) & (df["total_evaporation"] < 0)]["total_evaporation"] * (-1)
+        # m/day -> mm/day
+        pet_mean = series_mean(pet) * 1000
+        p_mean = series_mean(pre) * 1000
+        p_s = p_seasonality(df)[0]
         res[name] = {
-            "p_mean": p_mean(pre),
+            "p_mean": p_mean,
+            "pet_mean": pet_mean,
+            "aet_mean": series_mean(aet) * 1000,
+            "aridity": pet_mean / p_mean,
+            "p_seasonality": p_s,
             "high_prec_freq": high_prec_freq(pre),
             "high_prec_dur": high_prec_dur(pre),
             "high_prec_timing": high_prec_timing(df),
@@ -149,11 +161,11 @@ def glim_app():
     res = {}
     basin_shape_files_dir = os.path.join(definitions.DATASET_DIR, "shapefiles")
     for shape_file in tqdm(
-        [
-            file
-            for file in absolute_file_paths(basin_shape_files_dir)
-            if file.endswith(".shp")
-        ]
+            [
+                file
+                for file in absolute_file_paths(basin_shape_files_dir)
+                if file.endswith(".shp")
+            ]
     ):
         res[shp_id(shape_file)] = glimer.extract_basin_attributes_glim(
             shape_file=shape_file
@@ -183,11 +195,11 @@ def permeability_porosity_app():
     res = {}
     basin_shape_files_dir = os.path.join(definitions.DATASET_DIR, "shapefiles")
     for shape_file in tqdm(
-        [
-            file
-            for file in absolute_file_paths(basin_shape_files_dir)
-            if file.endswith(".shp")
-        ]
+            [
+                file
+                for file in absolute_file_paths(basin_shape_files_dir)
+                if file.endswith(".shp")
+            ]
     ):
         res[shp_id(shape_file)] = glhympser.zonal_stats_glhymps(shape_file=shape_file)
     res = pd.DataFrame(res).T.reset_index().rename(columns={"index": "gage_id"})
@@ -209,7 +221,7 @@ def igbp_app():
 
     res = {}
     for shape_file in tqdm(
-        file for file in absolute_file_paths(shp_dir) if file.endswith(".shp")
+            file for file in absolute_file_paths(shp_dir) if file.endswith(".shp")
     ):
         res[shp_id(shape_file)] = igbp_stats(shapefile=shape_file, igbp_tif=igbp_tif)
     df_res_order_sort = res_to_df(res)
@@ -229,7 +241,7 @@ def root_depth_app():
 
     res = {}
     for shape_file in tqdm(
-        file for file in absolute_file_paths(shp_dir) if file.endswith(".shp")
+            file for file in absolute_file_paths(shp_dir) if file.endswith(".shp")
     ):
         res[shp_id(shape_file)] = root_depth_50_99_stats(
             shape_file, igbp_tif, depth_mapper
@@ -258,8 +270,8 @@ def topo_elev_app():
         merge_and_reproject_dems(shpfile, dem_folder, tmp_merged, tmp_reprojected)
         tmp_res = {
             "gage_id": shp_id(shpfile),
-            "elev(m)": elev_mean(shpfile, tmp_reprojected),
-            "slope(m/km)": slope_mean(shpfile, tmp_reprojected, tmp_slope),
+            "elev": elev_mean(shpfile, tmp_reprojected),
+            "slope": slope_mean(shpfile, tmp_reprojected, tmp_slope),
         }
         res.append(tmp_res)
     df_res_order_sort = pd.DataFrame(res).sort_values(by=["gage_id"])
@@ -388,7 +400,7 @@ def soil_app():
 # python app.py --catch_attr soil
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Download Daymet within the boundary of each basin in CAMELS"
+        description="Calculate Attributes of Catchments"
     )
     parser.add_argument(
         "--catch_attr",

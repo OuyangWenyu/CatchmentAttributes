@@ -4,7 +4,7 @@ from qgis import processing
 output_dir = os.path.join(
     "D:\\", "code", "CatchmentAttributes", "data", "soil_source_data"
 )
-input_files = ["SNDPPT_M_sl" + str(i) + "_250m_ll" for i in range(4, 8)]
+input_files = ["CLYPPT_M_sl" + str(i) + "_250m_ll" for i in range(1, 8)]
 out_files = [
     os.path.join(output_dir, input_file + "_downscaled.tif")
     for input_file in input_files
