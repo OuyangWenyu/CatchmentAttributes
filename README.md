@@ -140,13 +140,18 @@ The result will be stored in data/attribute directory -- climate.csv
    Add Vector Layer", then choose the directory "LiMW_GIS 2015.gdb". The aim is to convert GliM to a raster form for
    processing.
 4. If we directly deal with the whole file, it will cost too much; now that we have shapefiles, it's a better choice to
-   clip the whole file to a range. You can use "Vector overlay" -> "Extract/clip by extent" and chose an extent which
-   overlay all target basins to clip. If it didn't work, you can use "Vector geometry" -> "Fix geometries" to fix it at
-   first. Remember all processed files are saved in the "GLIM" directory.
-5. Export GLiM to GeoTIFF format. First, we need to use "add unique value index field" for the "xx" field ("xx" is the
-   geology type) of the glim fixed shapefile to get new "xxValue" number field and output "layer with index field"
-   to "xx_index_field.shp"; then, we can rasterize "xx_index_field.shp" ("xxValue") to a geotiff file and name it
-   "glim_clip_raster.tif"
+   clip the whole file to a range. But before clipping, we should use "Vector geometry" -> "Fix geometries" to fix it at
+   first. Otherwise, it won't work. Then, you can use "Vector overlay" -> "Extract/clip by extent" and chose an extent
+   which overlay all target basins to clip. You can name it as "glim_clip.shp". Remember all processed files are saved
+   in the "GLIM" directory.
+5. Export GLiM to GeoTIFF format. First, we need to use "Vector table" -> "add unique value index field" for the "xx"
+   field ("xx" is the geology type) of "glim_clip.shp" to get new "xxValue" number field and output "layer with index
+   field" to "xx_index_field.shp". Later we will rasterize this shp file and burn "xxValue" into raster value. But 0
+   will be ignore, so here we use "field calculator" (open attribute table, then toggle edit the table, choose "open
+   field calculator" and "update existing filed", finally input: xxValue + 1) to add 1 to "xxValue". Then, we can
+   rasterize ("Raster" -> "Conversion" -> "Rasterize (vector to raster)") "xx_index_field.shp" ("xxValue") to a geotiff
+   file. Here set "Output raster size units" as "Georeferenced units". Two resolutions are 100. "Output extent" is set
+   as "xx_index_field.shp". Finally, output "glim_clip_raster.tif"
 6. Run the following script:
 
 ```Shell
@@ -170,11 +175,15 @@ The files needed in the process:
 |   ├── GlimRaster.tif
 |   ├── LiMW_GIS 2015.gdb.zip
 |   ├── xx_index_field.shp
-├── glim_short_long_name.txt
+├── glim_name_short_long.txt
 ```
 
-The file "glim_name_short_long.txt" is not used in the process, but it is useful for understanding the geology attribute
-file.
+GLiMCateNumberMapping.csv and GlimRaster.tif are generated when running script.
+
+Remember if you find some errors when processing grid data and recalculate the attr, you have to delete
+GLiMCateNumberMapping.csv and GlimRaster.tif manually before calling the script.
+
+The file "glim_name_short_long.txt" is useful for understanding the geology attribute file.
 
 The file "data/glim_cate_number_mapping.csv" comes from original CatchmentAttributes, we didn't use it.
 
@@ -242,7 +251,7 @@ Required folder structure:
 ```bash
 (1) processed_igbp.tif: converted IGBP classification in raster form
 (2) calculated_root_depth.txt: calculated root_depth 50/99 for each type of land cover based on Eq. (2) and Table 2 in (Zeng 2001)
-(2) Catchment shapefiles
+(3) Catchment shapefiles
 ├── shapefiles
 |   ├── basin_xxxx.shp
 |   ├── ...

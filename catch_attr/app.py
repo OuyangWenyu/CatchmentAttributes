@@ -67,10 +67,11 @@ def basin_mean_forcing(args):
         os.makedirs(output_dir)
     region = args.region
     years = list(range(int(args.year_range[0]), int(args.year_range[1])))
-    gage_dict = pd.read_csv(
-        os.path.join(definitions.DATASET_DIR, "camels_mr_name.txt"),
-        dtype={"gage_id": str},
-    ).to_dict(orient="list")
+    gage_dict_file = os.path.join(definitions.DATASET_DIR, region + "_name.txt")
+    if not os.path.isfile(gage_dict_file):
+        raise FileNotFoundError(
+            "No such id file, please set " + gage_dict_file + ". A template could be seen in data/camels_mr_name.txt")
+    gage_dict = pd.read_csv(gage_dict_file, dtype={"gage_id": str}).to_dict(orient="list")
     for year in years:
         trans_era5_land_to_camels_format(input_dir, output_dir, gage_dict, region, year)
     print("------------------------Finished---------------------------------")
@@ -149,7 +150,7 @@ def glim_app():
         )
 
     short2long_name_txt = os.path.join(
-        definitions.DATASET_DIR, "glim_short_long_name.txt"
+        definitions.DATASET_DIR, "glim_name_short_long.txt"
     )
 
     glimer = Glim(

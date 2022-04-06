@@ -141,24 +141,15 @@ cython_debug/
 .idea
 
 # source data
-/data/*.zip
-/data/*.qgz
-/data/*.tif
-/data/shapefiles/*
+/data/
 # keep basin_61019 as an example; refer to: https://stackoverflow.com/questions/987142/make-gitignore-ignore-everything-except-a-few-files
 !/data/shapefiles/basin_61019.*
-/data/DEM/
-/data/MCD15A3H/
-/data/MOD13Q1/
-/data/ERA5_LAND/
-/data/GLIM/
-/data/TOPO/
-/data/Asia/
-/data/LAI/
-/data/NDVI/
-/data/basin_mean_forcing/
-/data/attribute/
+!/data/61019_lump_era5_land_forcing.txt
+!/data/attribute_descriptions.xlsx
+!/data/calculated_root_depth.txt
+!/data/camels_mr_name.txt
+!/data/era5_land_camels_mr_avg_mean_2010.csv
+!/data/era5_land_camels_mr_sum_mean_2010.csv
+!/data/glim_cate_number_mapping.csv
+!/data/glim_name_short_long.txt
 /tests/results/
-/data/9_code_data/
-/data/soil_source_data/
-/data/SOIL/
