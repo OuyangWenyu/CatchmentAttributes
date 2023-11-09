@@ -130,6 +130,10 @@ python app.py --catch_attr climate
 
 The result will be stored in data/attribute directory -- climate.csv
 
+P.S.  For the original CCAM dataset, it has the following description:
+
+CCAM dataset: All basin data (basin static attributes, meteorological time series) is computed from information within basin boundaries defined by GDBD, even if the basin is in trunk streams. HydroMLYR dataset: All basin boundaries are delineated to river headwaters, there are no upstream basins.
+
 ## Lithology
 
 1. Download the GLiM dataset from original
