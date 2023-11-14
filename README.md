@@ -196,7 +196,7 @@ The file "data/glim_cate_number_mapping.csv" comes from original CatchmentAttrib
 The [9_code_data.zip](https://zenodo.org/record/5137288/files/9_code_data.zip?download=1) included in the Zenodo
 repository contains processed_glim.py, processed_igbp.tif, processed_permeability.tif and processed_porosity.tif
 
-Here we need processed_permeability.tif and processed_porosity.tif.
+Here we need `processed_permeability.tif` and `processed_porosity.tif`.
 
 Put the downloaded zip file in the "data" directory and unzip it.
 
@@ -221,9 +221,7 @@ python app.py --catch_attr permeability_porosity
 ## Land cover
 
 1. Source data: https://lpdaac.usgs.gov/products/mcd12q1v006/. However, MODIS data is divided into different tiles,
-   which is inconvenient for processing. Original authors have merged the MODIS product into a single tif which can be
-   downloaded here: https://1drv.ms/u/s!AqzR0fLyn9KKspF4xxbe0xM7qJNzkA?e=TYyZeC. Download it (processed_igbp.tif) and
-   put it in the "data" directory
+   which is inconvenient for processing. Original authors have merged the MODIS product into a single tif which is also in [9_code_data.zip](https://zenodo.org/record/5137288/files/9_code_data.zip?download=1). Downloaded and unzipped it if you have not. Then, you have `processed_igbp.tif` and put it in the "data" directory.
 2. Run the following script:
 
 ```Shell
