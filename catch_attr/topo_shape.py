@@ -142,13 +142,8 @@ def longest_distance(catchment_shp, stream_shps):
     float
         longest distance of a basin to its outlet
     """
-    #这两个地方算不出来，outlet为空导致leength为空
     basin = shapefile.Reader(catchment_shp).shapeRecord(0).shape
     outlet = find_outlet(catchment_shp, stream_shps)
-
-    #Shape #0: POLYGON
-    print(outlet)
-    #none
 
     if outlet:
         max_dis = 0

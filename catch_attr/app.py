@@ -128,7 +128,7 @@ def climate_app():
         }
         # p_seasonality's calculation is too slow, so we quit it now
     df_res_order_sort = res_to_df(res)
-    df_res_order_sort.to_csv(os.path.join(output_dir, "climate.csv"), index=None,mode='a')
+    df_res_order_sort.to_csv(os.path.join(output_dir, "climate.csv"), index=None)
     print("------------------------Finished---------------------------------")
 
 
