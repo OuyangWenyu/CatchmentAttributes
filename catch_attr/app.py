@@ -88,10 +88,20 @@ def climate_app():
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
     files = [x for x in absolute_file_paths(forcing_dir)]
-
     res = {}
+    #Do this for every txt file
     for file in tqdm(files):
-        name = file.split(os.path.sep)[-1].split("_")[0]
+        #This place intercepts a _ but the new data gage_id has a - inside. this is very troublesome need to change this place
+        filename = os.path.basename(file)
+        target_extension = "_lump_era5_land_forcing"
+        # Find the target extension at the beginning of the filename
+        start_index = filename.rfind(target_extension)
+        # Use a slice to capture the part of the filename after the last underscore
+        name = filename[:start_index]
+
+        #The following line of code is original
+        #name = file.split(os.path.sep)[-1].split("_")[0]
+
         df = pd.read_csv(file, sep="\s+")
         pre = df["total_precipitation"]
         # evp data in ERA5-LAND are negative
@@ -204,6 +214,7 @@ def permeability_porosity_app():
     ):
         res[shp_id(shape_file)] = glhympser.zonal_stats_glhymps(shape_file=shape_file)
     res = pd.DataFrame(res).T.reset_index().rename(columns={"index": "gage_id"})
+
     output_dir = os.path.join(definitions.DATASET_DIR, "attribute")
     df_res_order_sort = pd.DataFrame(res).sort_values(by=["gage_id"])
     df_res_order_sort.to_csv(

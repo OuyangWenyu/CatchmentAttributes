@@ -207,7 +207,6 @@ def trans_era5_land_to_camels_format(
             f_name, "era5_land_" + region + "_sum_mean_" + str(year) + ".csv"
         ):
             sum_data_file = os.path.join(era5_land_dir, f_name)
-
     avg_data_temp = pd.read_csv(avg_data_file, sep=",", dtype={avg_dataset[0]: str})
     sum_data_temp = pd.read_csv(sum_data_file, sep=",", dtype={sum_dataset[0]: str})
     # transform UTC time to local
@@ -219,14 +218,20 @@ def trans_era5_land_to_camels_format(
         lambda dt_tmp: utc_to_local(dt_tmp, local_tz=time_zone)
     )
     for i_basin in range(len(gage_dict[gage_id_key])):
+        # The next two pieces of code are matching the given dictionary and saving it.It needs to be written in advance
+        # The operation is to take the inner txt file corresponding to gage_dict[gage_id_key][i_basin]
+        # and save the gage_id in it into the id number of the two input files avg and sum
+        # After saving, you can directly run the code, gage_id and name stored in the shp file, you can use GIS to open its properties to view
+        # note that the order of gage_id must be aligned with the csv file
         avg_basin_data = avg_data_temp[
-            avg_data_temp[avg_dataset[0]].values.astype(int)
-            == int(gage_dict[gage_id_key][i_basin])
+            avg_data_temp[avg_dataset[0]].values.astype(str)
+            == str(gage_dict[gage_id_key][i_basin])
         ]
         sum_basin_data = sum_data_temp[
-            sum_data_temp[avg_dataset[0]].values.astype(int)
-            == int(gage_dict[gage_id_key][i_basin])
+            sum_data_temp[avg_dataset[0]].values.astype(str)
+            == str(gage_dict[gage_id_key][i_basin])
         ]
+
         if avg_basin_data.shape[0] == 0 or sum_basin_data.shape[0] == 0:
             raise ArithmeticError("chosen basins' number is zero")
         # get Year,Month,Day,Hour info
@@ -266,3 +271,5 @@ def trans_era5_land_to_camels_format(
                     by=camels_format_index[0:3]
                 )
         new_data_df.to_csv(output_file, header=True, index=False, sep=" ")
+
+

@@ -69,6 +69,7 @@ def find_outlet(catchment_shp, stream_shps):
     for stream in stream_shapes:
         line = LineString(stream.points)
         intersection = basin_polygon.exterior.intersection(line)
+
         if intersection.is_empty:
             continue
         else:
@@ -143,6 +144,7 @@ def longest_distance(catchment_shp, stream_shps):
     """
     basin = shapefile.Reader(catchment_shp).shapeRecord(0).shape
     outlet = find_outlet(catchment_shp, stream_shps)
+
     if outlet:
         max_dis = 0
         for p in basin.points:
@@ -304,7 +306,7 @@ def basin_topo_stats(basin_shps, stream_shps):
     res = {}
     for basin_shp in tqdm(basin_shps):
         basin = shapefile.Reader(basin_shp)
-        gage_id = int(get_record(basin, 0)["ID"])
+        gage_id = str(get_record(basin, 0)["ID"])
         ld = longest_distance(basin_shp, stream_shps)
         ba = basin_area(basin_shp)
         cp = catchment_perimeter(basin_shp)
@@ -331,3 +333,4 @@ def basin_topo_stats(basin_shps, stream_shps):
                 "ElongationRatio": None,
             }
     return res
+

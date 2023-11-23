@@ -85,7 +85,14 @@ def shp_id(shpfile: str):
     str
         shapefile id e.g. 0000
     """
-    return re.findall(r"[\d]+", shpfile)[-1]
+    # original code
+    #return re.findall(r"[\d]+", shpfile)[-1]
+
+    # adaptive code
+    # Remove the file extension ".shp" and then truncate what comes after "basin_"
+    basename = os.path.splitext(shpfile)[0]
+    result = basename.split('basin_', 1)[-1]
+    return result
 
 
 def absolute_file_paths(directory):
