@@ -124,6 +124,7 @@ def merge_and_reproject_dems(
         raise FileNotFoundError(
             f"did not find needed tifs for determining topograpy attributes | shpfile: {shpfile}"
         )
+
     merge_tifs(needed_tifs, tmp_merged)
     reproject_tif(tmp_merged, tmp_reprojected)
 

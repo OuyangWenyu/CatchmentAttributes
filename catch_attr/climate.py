@@ -28,6 +28,7 @@ def p_seasonality(data: pd.DataFrame):
     """
     df_date = data[["Year", "Mnth", "Day"]]
     df_date.columns = ["year", "month", "day"]
+
     date = pd.to_datetime(df_date).values.astype("datetime64[D]")
     data.index = date
     data = data.loc[datetime.datetime(2019, 1, 1): datetime.datetime(2019, 12, 31)]

@@ -88,10 +88,20 @@ def climate_app():
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
     files = [x for x in absolute_file_paths(forcing_dir)]
-
     res = {}
+    #Do this for every txt file
     for file in tqdm(files):
-        name = file.split(os.path.sep)[-1].split("_")[0]
+        #This place intercepts a _ but the new data gage_id has a - inside. this is very troublesome need to change this place
+        filename = os.path.basename(file)
+        target_extension = "_lump_era5_land_forcing"
+        # Find the target extension at the beginning of the filename
+        start_index = filename.rfind(target_extension)
+        # Use a slice to capture the part of the filename after the last underscore
+        name = filename[:start_index]
+
+        #The following line of code is original
+        #name = file.split(os.path.sep)[-1].split("_")[0]
+
         df = pd.read_csv(file, sep="\s+")
         pre = df["total_precipitation"]
         # evp data in ERA5-LAND are negative
@@ -118,7 +128,7 @@ def climate_app():
         }
         # p_seasonality's calculation is too slow, so we quit it now
     df_res_order_sort = res_to_df(res)
-    df_res_order_sort.to_csv(os.path.join(output_dir, "climate.csv"), index=None)
+    df_res_order_sort.to_csv(os.path.join(output_dir, "climate.csv"), index=None,mode='a')
     print("------------------------Finished---------------------------------")
 
 
